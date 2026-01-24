@@ -61,23 +61,23 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       # --- Docker Hub Builds ---
-      - name: Build and push ${{ steps.vars.outputs.repo_name_lc }}-server (Docker Hub)
+      - name: Build and push ${{ steps.repo_name_lc.outputs.repo_name_lc }}-server (Docker Hub)
         uses: docker/build-push-action@v4
         with:
           context: .
           file: ./Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ steps.vars.outputs.repo_name_lc }}-server:${{ steps.vars.outputs.version }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ steps.vars.outputs.repo_name_lc }}-server:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ steps.repo_name_lc.outputs.repo_name_lc }}-server:${{ steps.vars.outputs.version }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ steps.repo_name_lc.outputs.repo_name_lc }}-server:latest
 
       # --- GHCR Builds ---
-      - name: Build and push ${{ steps.vars.outputs.repo_name_lc }}-server (GHCR)
+      - name: Build and push ${{ steps.repo_name_lc.outputs.repo_name_lc }}-server (GHCR)
         uses: docker/build-push-action@v4
         with:
           context: .
           file: ./Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ steps.repo_owner_lc.outputs.repo_owner_lc }}/${{ steps.vars.outputs.repo_name_lc }}-server:${{ steps.vars.outputs.version }}
-            ghcr.io/${{ steps.repo_owner_lc.outputs.repo_owner_lc }}/${{ steps.vars.outputs.repo_name_lc }}-server:latest
+            ghcr.io/${{ steps.repo_owner_lc.outputs.repo_owner_lc }}/${{ steps.repo_name_lc.outputs.repo_name_lc }}-server:${{ steps.vars.outputs.version }}
+            ghcr.io/${{ steps.repo_owner_lc.outputs.repo_owner_lc }}/${{ steps.repo_name_lc.outputs.repo_name_lc }}-server:latest
