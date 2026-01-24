@@ -22,6 +22,10 @@ jobs:
         id: repo_owner_lc
         run: echo "repo_owner_lc=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_OUTPUT
 
+      - name: Set lowercase repository name
+        id: repo_name_lc
+        run: echo "repo_name_lc=${GITHUB_REPOSITORY##*/,,}" >> $GITHUB_OUTPUT
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -55,43 +59,23 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       # --- Docker Hub Builds ---
-      - name: Build and push floraccess-db (Docker Hub)
-        uses: docker/build-push-action@v4
-        with:
-          context: Database
-          file: Database/Dockerfile
-          push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/floraccess-db:${{ steps.vars.outputs.version }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/floraccess-db:latest
-
-      - name: Build and push floraccess-server (Docker Hub)
+      - name: Build and push ${{ steps.vars.outputs.repo_name_lc }}-server (Docker Hub)
         uses: docker/build-push-action@v4
         with:
           context: .
           file: ./Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/floraccess-server:${{ steps.vars.outputs.version }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/floraccess-server:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ steps.vars.outputs.repo_name_lc }}-server:${{ steps.vars.outputs.version }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ steps.vars.outputs.repo_name_lc }}-server:latest
 
       # --- GHCR Builds ---
-      - name: Build and push floraccess-db (GHCR)
-        uses: docker/build-push-action@v4
-        with:
-          context: Database
-          file: Database/Dockerfile
-          push: true
-          tags: |
-            ghcr.io/${{ steps.repo_owner_lc.outputs.repo_owner_lc }}/floraccess-db:${{ steps.vars.outputs.version }}
-            ghcr.io/${{ steps.repo_owner_lc.outputs.repo_owner_lc }}/floraccess-db:latest
-
-      - name: Build and push floraccess-server (GHCR)
+      - name: Build and push ${{ steps.vars.outputs.repo_name_lc }}-server (GHCR)
         uses: docker/build-push-action@v4
         with:
           context: .
           file: ./Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ steps.repo_owner_lc.outputs.repo_owner_lc }}/floraccess-server:${{ steps.vars.outputs.version }}
-            ghcr.io/${{ steps.repo_owner_lc.outputs.repo_owner_lc }}/floraccess-server:latest
+            ghcr.io/${{ steps.repo_owner_lc.outputs.repo_owner_lc }}/${{ steps.vars.outputs.repo_name_lc }}-server:${{ steps.vars.outputs.version }}
+            ghcr.io/${{ steps.repo_owner_lc.outputs.repo_owner_lc }}/${{ steps.vars.outputs.repo_name_lc }}-server:latest
