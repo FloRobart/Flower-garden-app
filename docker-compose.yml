@@ -1,0 +1,22 @@
+services:
+  flower_garden-server:
+    image: florobart/flower-garden-server:latest
+    restart: always
+    env_file:
+      - ./.env
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    read_only: true
+    user: "1800:1800"
+    tmpfs:
+      - /tmp:exec,nosuid,nodev
+      - /app/dist/swagger/:rw,uid=1800,gid=1800
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://flower-garden-server:80/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

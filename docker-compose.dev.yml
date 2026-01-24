@@ -1,0 +1,15 @@
+services:
+  flower_garden-server:
+    image: node:24-alpine
+    working_dir: /app
+    env_file: .env
+    volumes:
+      - ./:/app/
+      - ./node_modules:/app/node_modules
+    command: sh -c "cd /app && npm run dev"
+    ports:
+      - ${APP_PORT}:80
+    user: "1800:1800"
+    tmpfs:
+      - /tmp:exec,nosuid,nodev
+      - /app/src/swagger/json:rw,uid=1800,gid=1800
