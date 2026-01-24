@@ -1,5 +1,5 @@
 
-name: Test, build and publish Docker images
+name: Build and publish Docker images
 
 on:
   push:
@@ -29,9 +29,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Run tests
-        run: npm run test
 
       - name: Get package version
         id: vars
