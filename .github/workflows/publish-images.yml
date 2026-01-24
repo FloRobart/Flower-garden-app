@@ -24,7 +24,9 @@ jobs:
 
       - name: Set lowercase repository name
         id: repo_name_lc
-        run: echo "repo_name_lc=${GITHUB_REPOSITORY##*/,,}" >> $GITHUB_OUTPUT
+        run: |
+          repo_name="${GITHUB_REPOSITORY##*/}"
+          echo "repo_name_lc=${repo_name,,}" >> $GITHUB_OUTPUT
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
