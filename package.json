@@ -1,6 +1,6 @@
 {
   "name": "flower-garden",
-  "version": "1.0.5",
+  "version": "1.0.0",
   "description": "Server API for Flower Garden project. Get subdomain availability for a given domain.",
   "main": "server.js",
   "scripts": {
