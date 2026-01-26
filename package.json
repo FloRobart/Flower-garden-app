@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:FloRobart/Flower_garden_server.git"
+    "url": "git@github.com:FloRobart/flower-garden-app.git"
   },
   "author": "Floris Robart",
   "license": "GPL-3.0",

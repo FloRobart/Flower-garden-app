@@ -14,8 +14,8 @@ import AppConfig from '../../config/AppConfig';
  */
 export const hosts = async (_req: Request, res: Response, next: NextFunction) => {
     try {
-        const subDomains: Host[] = await hostService.getSubDomains(AppConfig.domain_name);
-        res.status(200).send(subDomains);
+        const htmlPage: string = await hostService.getSubDomains(AppConfig.domain_name);
+        res.status(200).send(htmlPage);
     } catch (error) {
         next(error);
     }

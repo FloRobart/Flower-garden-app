@@ -1,6 +1,6 @@
 services:
-  flower_garden-server:
-    image: florobart/flower-garden-server:latest
+  flower-garden-app:
+    image: florobart/flower-garden-app:latest
     restart: always
     env_file:
       - ./.env
@@ -16,7 +16,7 @@ services:
       - /tmp:exec,nosuid,nodev
       - /app/dist/swagger/:rw,uid=1800,gid=1800
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://flower-garden-server:80/ || exit 1"]
+      test: ["CMD-SHELL", "wget -q --spider http://flower-garden-app:80/ || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5

@@ -35,6 +35,8 @@ jobs:
           repo_name="${repo#*/}"
           # On remplace les underscores par des espaces
           repo_name="${repo_name//_/ }"
+          # On remplace les tirets par des espaces
+          repo_name="${repo_name//-/ }"
           echo "name=$repo_name" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release

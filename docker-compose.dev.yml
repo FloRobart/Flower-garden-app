@@ -1,5 +1,5 @@
 services:
-  flower_garden-server:
+  flower-garden-app:
     image: node:24-alpine
     working_dir: /app
     env_file: .env

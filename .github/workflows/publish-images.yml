@@ -24,7 +24,7 @@ jobs:
 
       - name: Set lowercase repository name
         id: repo_name_lc
-        run: echo "repo_name_lc=flower_garden" >> $GITHUB_OUTPUT
+        run: echo "repo_name_lc=flower-garden" >> $GITHUB_OUTPUT
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -59,23 +59,23 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       # --- Docker Hub Builds ---
-      - name: Build and push ${{ steps.repo_name_lc.outputs.repo_name_lc }}-server (Docker Hub)
+      - name: Build and push ${{ steps.repo_name_lc.outputs.repo_name_lc }}-app (Docker Hub)
         uses: docker/build-push-action@v4
         with:
           context: .
           file: ./Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ steps.repo_name_lc.outputs.repo_name_lc }}-server:${{ steps.vars.outputs.version }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ steps.repo_name_lc.outputs.repo_name_lc }}-server:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ steps.repo_name_lc.outputs.repo_name_lc }}-app:${{ steps.vars.outputs.version }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ steps.repo_name_lc.outputs.repo_name_lc }}-app:latest
 
       # --- GHCR Builds ---
-      - name: Build and push ${{ steps.repo_name_lc.outputs.repo_name_lc }}-server (GHCR)
+      - name: Build and push ${{ steps.repo_name_lc.outputs.repo_name_lc }}-app (GHCR)
         uses: docker/build-push-action@v4
         with:
           context: .
           file: ./Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ steps.repo_owner_lc.outputs.repo_owner_lc }}/${{ steps.repo_name_lc.outputs.repo_name_lc }}-server:${{ steps.vars.outputs.version }}
-            ghcr.io/${{ steps.repo_owner_lc.outputs.repo_owner_lc }}/${{ steps.repo_name_lc.outputs.repo_name_lc }}-server:latest
+            ghcr.io/${{ steps.repo_owner_lc.outputs.repo_owner_lc }}/${{ steps.repo_name_lc.outputs.repo_name_lc }}-app:${{ steps.vars.outputs.version }}
+            ghcr.io/${{ steps.repo_owner_lc.outputs.repo_owner_lc }}/${{ steps.repo_name_lc.outputs.repo_name_lc }}-app:latest

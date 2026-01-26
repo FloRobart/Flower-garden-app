@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="author" content="Floris Robart" />
+    <meta name="title" content="CV - Floris Robart" />
+    <meta name="description" content="Le CV en ligne de Floris Robart, développeur full stack">
+    <link rel="shortcut icon" href="../icons/favicon.png" type="image/x-icon" />
+    <link rel="icon" href="../icons/favicon.png" type="image/x-icon" />
+    <title>Floris Robart</title>
+    <link rel="stylesheet" href="../css/global.css" />
+</head>
+
+<body>
+    <header class="header">
+        <div class="header__content">
+            <div class="header__logo-container"  onclick="window.location.href = ''">
+                <div class="header__logo-img-cont">
+                    <img src="../icons/imgs/floris.jpg" alt="Floris Robart Image" class="header__logo-img" />
+                </div>
+                <span class="header__logo-sub">Floris Robart</span>
+            </div>
+            <div class="header__main">
+                <ul class="header__links">
+                    <li class="header__link-wrapper"><a href="" class="header__link">Accueil</a></li>
+                    <li class="header__link-wrapper"><a href="#projects" class="header__link">Projets</a></li>
+                </ul>
+                <div class="header__main-ham-menu-cont">
+                    <img src="../icons/imgs/open_menu.png" alt="hamburger menu" class="header__main-ham-menu" />
+                    <img src="../icons/imgs/close_menu.png" alt="hamburger menu close" class="header__main-ham-menu-close d-none" />
+                </div>
+            </div>
+        </div>
+        <div class="header__sm-menu">
+            <div class="header__sm-menu-content">
+                <ul class="header__sm-menu-links">
+                    <li class="header__sm-menu-link"><a href="">Accueil</a></li>
+                    <li class="header__sm-menu-link"><a href="#projects">Projets</a></li>
+                </ul>
+            </div>
+        </div>
+    </header>
+
+    <section id="projects" class="projects sec-pad">
+        <div class="main-container">
+            <h2 class="heading heading-sec heading-sec__mb-bg">
+                <span class="heading-sec__main">Projets de Floris Robart</span>
+                <span class="heading-sec__sub">
+                    Vous trouverez ici une liste de mes projets personnels actuellement en ligne.
+                </span>
+                <span class="heading-sec__sub">
+                    Cette liste est automatiquement mise à jour grâce au enregistrement DNS.
+                </span>
+            </h2>
+            <div class="projects_content">
+                {{ PROJECTS_LIST }}
+            </div>
+        </div>
+    </section>
+
+    <footer class="main-footer">
+        <div class="main-container">
+            <div class="main-footer__upper">
+                <div class="main-footer__row main-footer__row-1">
+                    <h2 class="heading heading-sm main-footer__heading-sm">
+                        <span>Réseaux</span>
+                    </h2>
+                    <div class="main-footer__social-cont">
+                        <a target="_blank" rel="noreferrer" title="Github" href="https://github.com/FloRobart">
+                            <img class="main-footer__icon" src="../icons/imgs/white/github_white.png" alt="Github icon" />
+                        </a>
+                        <a target="_blank" rel="noreferrer" title="Linkedin" href="https://www.linkedin.com/in/floris-robart">
+                            <img class="main-footer__icon" src="../icons/imgs/white/linkedin_white.png" alt="Linkedin icon" />
+                        </a>
+                        <a target="_blank" rel="noreferrer" title="Envoyer un mail" href="mailto:florisrobart.pro@gmail.com">
+                            <img class="main-footer__icon" src="../icons/imgs/white/gmail_white.png" alt="Gmail icon" />
+                        </a>
+                    </div>
+                </div>
+                <div class="main-footer__row main-footer__row-2">
+                    <h2 class="heading heading-sm text-lt">Floris Robart</h2>
+                    <p class="main-footer__short-desc">
+                        Développeur full stack. Passionné par la création d'applications web et mobiles performantes et intuitives.
+                    </p>
+                </div>
+            </div>
+
+            <div class="main-footer__lower">
+                &copy; Copyright 2024 - 
+                <script>document.write(new Date().getFullYear())</script>. Créé par
+                <a rel="noreferrer" target="_self" href="https://github.com/FloRobart">Floris Robart</a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
