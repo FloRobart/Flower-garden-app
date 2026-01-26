@@ -42,6 +42,9 @@ app.use(morgan(AppConfig.log_format));
 /* Home routes */
 app.use('/', homeRoutes);
 
+/* Static public files */
+app.use(express.static(path.join(process.cwd(), "public")));
+
 
 /* Default Route Handler (404) */
 app.use(defaultRouteHandler);

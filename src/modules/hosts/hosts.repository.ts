@@ -1,5 +1,6 @@
 import * as dns from 'dns/promises';
 import * as https from 'https';
+import { Host } from './hosts.types';
 
 
 
@@ -19,7 +20,6 @@ export async function getAllSubdomains(host: string): Promise<string[]> {
             res.on('end', () => {
                 try {
                     const json = JSON.parse(data);
-                    console.debug('crt.sh response entries :', JSON.stringify(json, null, 2));
                     const names: string[] = [];
                     for (const entry of json) {
                         const v = entry.name_value || entry.common_name || '';
@@ -41,10 +41,10 @@ export async function getAllSubdomains(host: string): Promise<string[]> {
 /**
  * Performs a DNS lookup with a timeout for checking if a host resolves
  * @param host The hostname to look up
- * @param ms The timeout in milliseconds
+ * @param timeout The timeout in milliseconds
  * @returns A promise that resolves to true if the lookup succeeds within the timeout, otherwise false
  */
-export async function checkHost(host: string, ms = 2000): Promise<boolean> {
+export async function checkHost(host: string, timeout = 2000): Promise<boolean> {
     return new Promise((resolve) => {
         let settled = false;
         const to = setTimeout(() => {
@@ -52,7 +52,7 @@ export async function checkHost(host: string, ms = 2000): Promise<boolean> {
                 settled = true;
                 resolve(false);
             }
-        }, ms);
+        }, timeout);
         dns.lookup(host).then(() => {
             if (!settled) {
                 clearTimeout(to);
@@ -71,47 +71,76 @@ export async function checkHost(host: string, ms = 2000): Promise<boolean> {
 
 
 /**
- * Récupère plusieurs types d'enregistrements DNS pour un sous-domaine
- * @param host Le sous-domaine à interroger
- * @returns Un objet contenant les résultats par type (null si introuvable)
+ * Fetches metadata (name and description) for multiple hosts with a timeout
+ * @param hosts The list of hostnames to fetch metadata for
+ * @param timeout The timeout in milliseconds for each metadata fetch
+ * @returns A promise that resolves to an array of Host objects with metadata
  */
-async function getDnsRecords(host: string): Promise<Record<string, any>> {
-    const results: Record<string, any> = {};
+export async function getHostsWithMetaData(hosts: string[], timeout = 2000): Promise<Host[]> {
+    return Promise.all(hosts.map(async (host: string) => {
+        let name: string | undefined;
+        let description: string | undefined;
+        let icon: string | undefined;
 
-    try { results.A = await dns.resolve4(host); } catch (e) { results.A = null; }
-    try { results.AAAA = await dns.resolve6(host); } catch (e) { results.AAAA = null; }
-    try { results.CNAME = await dns.resolveCname(host); } catch (e) { results.CNAME = null; }
-    try { results.MX = await dns.resolveMx(host); } catch (e) { results.MX = null; }
-    try { results.NS = await dns.resolveNs(host); } catch (e) { results.NS = null; }
-    try { results.SOA = await dns.resolveSoa(host); } catch (e) { results.SOA = null; }
-    try { results.TXT = await dns.resolveTxt(host); } catch (e) { results.TXT = null; }
-    try { results.SRV = await dns.resolveSrv(host); } catch (e) { results.SRV = null; }
+        try {
+            const meta = await fetchMetaData(host, timeout);
+            if (meta) {
+                name = meta.name;
+                description = meta.description;
+                icon = meta.icon;
+            }
+        } catch (e) {
+            throw e;
+        }
 
-    try {
-
-        if ((dns as any).resolveNaptr) results.NAPTR = await (dns as any).resolveNaptr(host);
-        else results.NAPTR = null;
-    } catch (e) { results.NAPTR = null; }
-
-    try {
-        if ((dns as any).resolveCaa) results.CAA = await (dns as any).resolveCaa(host);
-        else results.CAA = null;
-    } catch (e) { results.CAA = null; }
-
-    return results;
+        return { host, name, description, icon } as Host;
+    }));
 }
 
-
 /**
- * Récupère les enregistrements DNS pour une liste de sous-domaines en parallèle
- * @param hosts Liste de sous-domaines
- * @returns Mapping host -> enregistrements
+ * Fetches metadata (name and description) from a hostname with a timeout
+ * @param hostname The hostname to fetch metadata from
+ * @param timeout The timeout in milliseconds
+ * @returns An object containing the name and description, or null if not found
  */
-async function getRecordsForSubdomains(hosts: string[]): Promise<Record<string, Record<string, any>>> {
-    const checks = hosts.map(async (h) => ({ h, r: await getDnsRecords(h) }));
-    const resolved = await Promise.all(checks);
-    const map: Record<string, Record<string, any>> = {};
-    for (const e of resolved) map[e.h] = e.r;
+async function fetchMetaData(hostname: string, timeout = 2000): Promise<{ name?: string; description?: string; icon?: string } | null> {
+    const controller = new AbortController();
+    const to = setTimeout(() => controller.abort(), timeout);
+    try {
+        const tryFetch = async (url: string) => {
+            try {
+                const res = await fetch(url, { signal: controller.signal, headers: { 'User-Agent': 'node.js' } as any });
+                if (!res.ok) return null;
+                return await res.text();
+            } catch {
+                return null;
+            }
+        };
 
-    return map;
+        const html = await tryFetch(`https://${hostname}`) ?? await tryFetch(`http://${hostname}`);
+        if (!html) return null;
+
+        const name = html.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1]?.trim();
+        const description = html.match(/<meta[^>]+name=["']description["'][^>]*content=["]([^\"]+)["][^>]*>/i)?.[1]?.trim()
+            ?? html.match(/<meta[^>]+property=["']og:description["'][^>]*content=["']([^"']+)["']/i)?.[1]?.trim();
+
+        // Try to find favicon from HTML <link> tags
+        let icon: string | undefined;
+        const linkMatch = html.match(/<link[^>]+rel=["']([^"']*icon[^"']*)["'][^>]*href=["']([^"']+)["'][^>]*>/i);
+        if (linkMatch) {
+            let href = linkMatch[2].trim();
+            if (href.startsWith('//')) href = 'https:' + href;
+            else if (href.startsWith('/')) href = `https://${hostname}${href}`;
+            else if (!/^https?:\/\//i.test(href)) href = `https://${hostname}/${href.replace(/^\.\/?/, '')}`;
+            icon = href;
+        } else {
+            // Fallback to /favicon.ico if it exists
+            const fav = await tryFetch(`https://${hostname}/favicon.ico`) ?? await tryFetch(`http://${hostname}/favicon.ico`);
+            if (fav !== null) icon = `https://${hostname}/favicon.ico`;
+        }
+
+        return { name, description, icon };
+    } finally {
+        clearTimeout(to);
+    }
 }
