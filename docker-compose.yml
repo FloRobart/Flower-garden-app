@@ -4,6 +4,8 @@ services:
     restart: always
     env_file:
       - ./.env
+    networks:
+      - flower-garden-net
     security_opt:
       - no-new-privileges:true
     cap_drop:
@@ -14,7 +16,6 @@ services:
     user: "1800:1800"
     tmpfs:
       - /tmp:exec,nosuid,nodev
-      - /app/dist/swagger/:rw,uid=1800,gid=1800
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://flower-garden-app:80/ || exit 1"]
       interval: 10s

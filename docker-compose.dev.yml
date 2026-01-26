@@ -12,4 +12,3 @@ services:
     user: "1800:1800"
     tmpfs:
       - /tmp:exec,nosuid,nodev
-      - /app/src/swagger/json:rw,uid=1800,gid=1800

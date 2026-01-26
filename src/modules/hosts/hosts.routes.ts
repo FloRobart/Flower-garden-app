@@ -8,10 +8,17 @@ const router = Router();
 
 
 /**
- * GET /hosts
+ * GET /
  * Returns a list of subdomains for the configured domain name
  */
-router.get('/', HostController.hosts);
+router.get('/', HostController.hostsHtml);
+
+
+/**
+ * GET /hosts
+ * Returns a list of all projects on the configured domain name
+ */
+router.get('/hosts', HostController.hostsList);
 
 
 

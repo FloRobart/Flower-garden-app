@@ -12,28 +12,12 @@ import fs from 'node:fs';
  * @param host The domain or host to scan
  * @returns A list of available hosts as strings
  */
-export async function getSubDomains(host: string): Promise<string> {
+export async function getSubDomainsHtml(host: string): Promise<string> {
 	try {
-		const normalized = host.replace(/\.+$/g, '').toLowerCase();
-
-		/* Get hosts from certificate transparency logs */
-		const hosts = await hostRepository.getAllSubdomains(normalized);
-
-		/* Check which hosts currently resolve */
-		const checkedHostsPromise = hosts.map(async (host) => ({ host, ok: await hostRepository.checkHost(host, 1500) }));
-		const checkedHosts: string[] = (await Promise.all(checkedHostsPromise)).filter((c) => c.ok).map((c) => c.host);
-
-		/* Filter with name of host */
-		const filteredHosts: string[] = checkedHosts.filter(sub => !sub.startsWith('www.'));
-
-		/* Get metadata for filtered hosts */
-		const hostsWithMeta: Host[] = await hostRepository.getHostsWithMetaData(filteredHosts, 1500);
-
-		/* Keep only hosts with name or description */
-		const filteredHostsWithMeta: Host[] = hostsWithMeta.filter(h => h.name || h.description);
+		const filteredHostsWithMeta: Host[] = (await getSubDomainsList(host)).sort((a, b) => a.host.localeCompare(b.host));
 
 		/* Build HTML page */
-		return buildHtmlPage(filteredHostsWithMeta.sort((a, b) => a.host.localeCompare(b.host)));
+		return buildHtmlPage(filteredHostsWithMeta);
 	} catch (error) {
 		throw new AppError('Failed to get hosts', 500);
 	}
@@ -62,4 +46,37 @@ function buildHtmlPage(hosts: Host[]): string {
 	}
 
 	return hostsTemplate.replace(/{{[ ]*PROJECTS_LIST[ ]*}}/, projectsHtml);
+}
+
+
+/**
+ * Scans hosts and returns liste of available hosts
+ * @param host The domain or host to scan
+ * @returns A list of available hosts as strings
+ */
+export async function getSubDomainsList(host: string): Promise<Host[]> {
+	try {
+		const normalized = host.replace(/\.+$/g, '').toLowerCase();
+
+		/* Get hosts from certificate transparency logs */
+		const hosts = await hostRepository.getAllSubdomains(normalized);
+
+		/* Check which hosts currently resolve */
+		const checkedHostsPromise = hosts.map(async (host) => ({ host, ok: await hostRepository.checkHost(host, 1500) }));
+		const checkedHosts: string[] = (await Promise.all(checkedHostsPromise)).filter((c) => c.ok).map((c) => c.host);
+
+		/* Filter with name of host */
+		const filteredHosts: string[] = checkedHosts.filter(sub => !sub.startsWith('www.'));
+
+		/* Get metadata for filtered hosts */
+		const hostsWithMeta: Host[] = await hostRepository.getHostsWithMetaData(filteredHosts, 1500);
+
+		/* Keep only hosts with name or description */
+		const filteredHostsWithMeta: Host[] = hostsWithMeta.filter(h => h.name || h.description);
+
+		/* Build HTML page */
+		return filteredHostsWithMeta.sort((a, b) => a.host.localeCompare(b.host));
+	} catch (error) {
+		throw new AppError('Failed to get hosts', 500);
+	}
 }
