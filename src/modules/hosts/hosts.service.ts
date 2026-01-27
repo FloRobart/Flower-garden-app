@@ -73,7 +73,7 @@ export async function getSubDomainsList(host: string): Promise<Host[]> {
 		/* Get metadata for filtered hosts */
 		const hostsWithMeta: Host[] = await hostRepository.getHostsWithMetaData(filteredHosts);
 
-		/* Keep only hosts with name or description */
+		/* Keep only hosts with name or description (for exclude server) */
 		const filteredHostsWithMeta: Host[] = hostsWithMeta.filter(h => h.name || h.description);
 
 		/* Build HTML page */
