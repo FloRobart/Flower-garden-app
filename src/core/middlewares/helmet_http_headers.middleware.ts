@@ -13,7 +13,7 @@ export const helmetOptions: HelmetOptions = {
             defaultSrc: ["'none'"],
             scriptSrc: ["'none'"],
             styleSrc: ["'self'"],
-            imgSrc: AppConfig.domain_name ? ["'self'", AppConfig.domain_name] : ["*"],
+            imgSrc: ["*"],
             connectSrc: ["'none'"],
             objectSrc: ["'none'"],
             frameAncestors: ["'none'"],

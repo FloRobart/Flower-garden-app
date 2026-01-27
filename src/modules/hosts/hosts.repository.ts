@@ -44,7 +44,7 @@ export async function getAllSubdomains(host: string): Promise<string[]> {
  * @param timeout The timeout in milliseconds
  * @returns A promise that resolves to true if the lookup succeeds within the timeout, otherwise false
  */
-export async function checkHost(host: string, timeout = 2000): Promise<boolean> {
+export async function checkHost(host: string, timeout = 6000): Promise<boolean> {
     return new Promise((resolve) => {
         let settled = false;
         const to = setTimeout(() => {
@@ -76,7 +76,7 @@ export async function checkHost(host: string, timeout = 2000): Promise<boolean> 
  * @param timeout The timeout in milliseconds for each metadata fetch
  * @returns A promise that resolves to an array of Host objects with metadata
  */
-export async function getHostsWithMetaData(hosts: string[], timeout = 2000): Promise<Host[]> {
+export async function getHostsWithMetaData(hosts: string[], timeout = 6000): Promise<Host[]> {
     return Promise.all(hosts.map(async (host: string) => {
         let name: string | undefined;
         let description: string | undefined;
@@ -103,7 +103,7 @@ export async function getHostsWithMetaData(hosts: string[], timeout = 2000): Pro
  * @param timeout The timeout in milliseconds
  * @returns An object containing the name and description, or null if not found
  */
-async function fetchMetaData(hostname: string, timeout = 2000): Promise<{ name?: string; description?: string; icon?: string } | null> {
+async function fetchMetaData(hostname: string, timeout = 6000): Promise<{ name?: string; description?: string; icon?: string } | null> {
     const controller = new AbortController();
     const to = setTimeout(() => controller.abort(), timeout);
     try {

@@ -64,14 +64,14 @@ export async function getSubDomainsList(host: string): Promise<Host[]> {
 		const hosts = await hostRepository.getAllSubdomains(normalized);
 
 		/* Check which hosts currently resolve */
-		const checkedHostsPromise = hosts.map(async (host) => ({ host, ok: await hostRepository.checkHost(host, 1500) }));
+		const checkedHostsPromise = hosts.map(async (host) => ({ host, ok: await hostRepository.checkHost(host) }));
 		const checkedHosts: string[] = (await Promise.all(checkedHostsPromise)).filter((c) => c.ok).map((c) => c.host);
 
 		/* Filter with name of host */
 		const filteredHosts: string[] = checkedHosts.filter(sub => !sub.startsWith('www.'));
 
 		/* Get metadata for filtered hosts */
-		const hostsWithMeta: Host[] = await hostRepository.getHostsWithMetaData(filteredHosts, 1500);
+		const hostsWithMeta: Host[] = await hostRepository.getHostsWithMetaData(filteredHosts);
 
 		/* Keep only hosts with name or description */
 		const filteredHostsWithMeta: Host[] = hostsWithMeta.filter(h => h.name || h.description);
