@@ -1,6 +1,5 @@
 import express from 'express';
-import { Request } from 'express';
-import homeRoutes from './modules/hosts/hosts.routes';
+import hostsRoutes from './modules/hosts/hosts.routes';
 import { errorHandler } from './core/middlewares/error.middleware';
 import AppConfig from './config/AppConfig';
 import { limiter } from './core/middlewares/rate_limiter.middleware';
@@ -40,7 +39,7 @@ app.use(morgan(AppConfig.log_format));
 
 
 /* Home routes */
-app.use('/', homeRoutes);
+app.use('/', hostsRoutes);
 
 /* Static public files */
 app.use(express.static(path.join(process.cwd(), "public")));
