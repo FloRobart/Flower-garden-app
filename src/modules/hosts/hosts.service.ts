@@ -36,6 +36,8 @@ function buildHtmlPage(hosts: Host[]): string {
 	let hostsTemplate = fs.readFileSync(hostsTemplatePath, 'utf8');
 	let projectTemplate = fs.readFileSync(projectTemplatePath, 'utf8');
 
+	hostsTemplate = hostsTemplate.replace(/{{[ ]*CURRENT_YEAR[ ]*}}/g, new Date().getFullYear().toString());
+
 	let projectsHtml = '';
 	for (const host of hosts) {
 		let projectEntry = projectTemplate.replace(/{{[ ]*TITLE[ ]*}}/g, host.name ?? host.host);

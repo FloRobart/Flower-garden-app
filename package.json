@@ -1,7 +1,7 @@
 {
   "name": "flower-garden",
-  "version": "1.0.2",
-  "description": "Server API for Flower Garden project. Get subdomain availability for a given domain.",
+  "version": "1.0.3",
+  "description": "Application for Flower Garden app. Get subdomain availability for a given domain.",
   "main": "server.js",
   "scripts": {
     "build": "tsc",
