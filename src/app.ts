@@ -21,7 +21,7 @@ app.use(helmet(helmetOptions));
 
 /* Trust proxy in production */
 if (AppConfig.app_env.includes('prod')) {
-    app.set('trust proxy', true);
+    app.set('trust proxy', 1);
 }
 
 /* Rate Limiter */
