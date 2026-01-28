@@ -25,7 +25,7 @@ interface AppConfigInterface {
 
 const AppConfig: AppConfigInterface = {
     /* Application configuration */
-    app_name: "Flower garden",
+    app_name: "Flower garden app",
     app_port: 80,
     host_name: process.env.HOST_NAME || 'localhost',
     base_url: process.env.BASE_URL || 'http://localhost:80',

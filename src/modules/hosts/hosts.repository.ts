@@ -1,6 +1,9 @@
 import * as dns from 'dns/promises';
 import * as https from 'https';
 import { Host } from './hosts.types';
+import path from 'node:path';
+import fs from 'node:fs';
+import AppConfig from '../../config/AppConfig';
 
 
 
@@ -76,25 +79,35 @@ export async function checkHost(host: string, timeout = 6000): Promise<boolean> 
  * @param timeout The timeout in milliseconds for each metadata fetch
  * @returns A promise that resolves to an array of Host objects with metadata
  */
-export async function getHostsWithMetaData(hosts: string[], timeout = 6000): Promise<Host[]> {
-    return Promise.all(hosts.map(async (host: string) => {
+export async function getHostsWithMetaData(hosts: string[], currentHost: string, timeout = 6000): Promise<Host[]> {
+    /* Filter out the current host */
+    const hostsWithoutCurrentHost = hosts.filter(host => host.toLowerCase() !== currentHost.toLowerCase());
+
+    /* Fetch metadata for each host */
+    const hostsWithMetaData = await Promise.all(hostsWithoutCurrentHost.map(async (host: string) => {
         let name: string | undefined;
         let description: string | undefined;
         let icon: string | undefined;
 
         try {
-            const meta = await fetchMetaData(host, timeout);
+            const meta = await getMetaData(host, timeout);
             if (meta) {
                 name = meta.name;
                 description = meta.description;
                 icon = meta.icon;
             }
         } catch (e) {
-            throw e;
+            // Ignore errors
         }
 
         return { host, name, description, icon } as Host;
     }));
+
+    /* Add current host */
+    const currentMetaData = extractDataFromHtml(fs.readFileSync(path.join(process.cwd(), "public", "html", "hosts.html"), 'utf8'));
+    hostsWithMetaData.push({ host: currentHost, ...currentMetaData });
+
+    return hostsWithMetaData;
 }
 
 /**
@@ -103,44 +116,85 @@ export async function getHostsWithMetaData(hosts: string[], timeout = 6000): Pro
  * @param timeout The timeout in milliseconds
  * @returns An object containing the name and description, or null if not found
  */
-async function fetchMetaData(hostname: string, timeout = 6000): Promise<{ name?: string; description?: string; icon?: string } | null> {
+async function getMetaData(hostname: string, timeout = 6000): Promise<{ name?: string; description?: string; icon?: string } | null> {
+    const html = await fetchHtmlPage(`https://${hostname}`, timeout) ?? await fetchHtmlPage(`http://${hostname}`, timeout);
+    if (!html) return null;
+
+    const metaData = extractDataFromHtml(html);
+    const icon = await fetchIcon(hostname, timeout) ?? undefined;
+
+    return { ...metaData, icon };
+}
+
+/**
+ * Fetches the HTML content of a page with a timeout
+ * @param url The URL of the page to fetch
+ * @param timeout The timeout in milliseconds
+ * @returns The HTML content as a string, or null if the fetch fails or times out
+ */
+async function fetchHtmlPage(url: string, timeout = 6000): Promise<string | null> {
     const controller = new AbortController();
     const to = setTimeout(() => controller.abort(), timeout);
+
     try {
-        const tryFetch = async (url: string) => {
-            try {
-                const res = await fetch(url, { signal: controller.signal, headers: { 'User-Agent': 'node.js' } as any });
-                if (!res.ok) return null;
-                return await res.text();
-            } catch {
-                return null;
-            }
-        };
+        const res = await fetch(url, { signal: controller.signal, headers: { 'User-Agent': AppConfig.app_name }});
+        if (!res.ok) return null;
 
-        const html = await tryFetch(`https://${hostname}`) ?? await tryFetch(`http://${hostname}`);
-        if (!html) return null;
-
-        const name = html.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1]?.trim();
-        const description = html.match(/<meta[^>]+name=["']description["'][^>]*content=["]([^\"]+)["][^>]*>/i)?.[1]?.trim()
-            ?? html.match(/<meta[^>]+property=["']og:description["'][^>]*content=["']([^"']+)["']/i)?.[1]?.trim();
-
-        // Try to find favicon from HTML <link> tags
-        let icon: string | undefined;
-        const linkMatch = html.match(/<link[^>]+rel=["']([^"']*icon[^"']*)["'][^>]*href=["']([^"']+)["'][^>]*>/i);
-        if (linkMatch) {
-            let href = linkMatch[2].trim();
-            if (href.startsWith('//')) href = 'https:' + href;
-            else if (href.startsWith('/')) href = `https://${hostname}${href}`;
-            else if (!/^https?:\/\//i.test(href)) href = `https://${hostname}/${href.replace(/^\.\/?/, '')}`;
-            icon = href;
-        } else {
-            // Fallback to /favicon.ico if it exists
-            const fav = await tryFetch(`https://${hostname}/favicon.ico`) ?? await tryFetch(`http://${hostname}/favicon.ico`);
-            if (fav !== null) icon = `https://${hostname}/favicon.ico`;
-        }
-
-        return { name, description, icon };
+        return await res.text();
+    } catch (e) {
+        return null;
     } finally {
         clearTimeout(to);
     }
+}
+
+/**
+ * Extracts the title and description from an HTML page
+ * @param htmlPage The HTML content of the page
+ * @returns An object containing the name and description, or null if not found
+ */
+function extractDataFromHtml(htmlPage: string): { name?: string; description?: string } | null {
+    /* Get name */
+    const name = htmlPage.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1]?.trim()
+        ?? htmlPage.match(/<meta[^>]+name=["']title["'][^>]*content=["]([^\"]+)["][^>]*>/i)?.[1]?.trim();
+    
+    /* Get description */
+    const description = htmlPage.match(/<meta[^>]+name=["']description["'][^>]*content=["]([^\"]+)["][^>]*>/i)?.[1]?.trim()
+        ?? htmlPage.match(/<meta[^>]+property=["']og:description["'][^>]*content=["']([^"']+)["']/i)?.[1]?.trim();
+
+
+    return { name, description };
+}
+
+/**
+ * Fetches the favicon/icon URL from a hostname
+ * @param hostname The hostname to fetch the icon from
+ * @param timeout The timeout in milliseconds
+ * @returns The icon URL as a string, or null if not found
+ */
+async function fetchIcon(hostname: string, timeout = 6000): Promise<string | null> {
+    /* Get icon link from HTML */
+    const html = await fetchHtmlPage(`https://${hostname}`, timeout) ?? await fetchHtmlPage(`http://${hostname}`, timeout);
+    const iconLink = html?.match(/<link[^>]+rel=["']([^"']*icon[^"']*)["'][^>]*href=["']([^"']+)["'][^>]*>/i);
+
+    /* If icon link found, construct full URL */
+    if (iconLink) {
+        let href = iconLink[2].trim();
+        if (href.startsWith('//')) href = 'https:' + href;
+        else if (href.startsWith('/')) href = `https://${hostname}${href}`;
+        else if (!/^https?:\/\//i.test(href)) href = `https://${hostname}/${href.replace(/^\.\/?/, '')}`;
+
+        return href;
+    }
+
+    /* If icon link not found, Try to fetch favicon.ico */
+    const defaultHost = `${hostname}/favicon.ico`;
+
+    let href = await fetchHtmlPage(`https://${defaultHost}`, timeout);
+    if (href !== null) { return `https://${defaultHost}`; }
+
+    href = await fetchHtmlPage(`http://${defaultHost}`, timeout);
+    if (href !== null) { return `http://${defaultHost}`; }
+
+    return href;
 }
