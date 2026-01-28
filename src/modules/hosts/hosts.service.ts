@@ -10,11 +10,13 @@ import fs from 'node:fs';
 /**
  * Scans hosts and returns liste of available hosts
  * @param host The domain or host to scan
+ * @param currentHost The current host making the request
  * @returns A list of available hosts as strings
  */
-export async function getSubDomainsHtml(host: string): Promise<string> {
+export async function getSubDomainsHtml(host: string, currentHost: string): Promise<string> {
 	try {
-		const filteredHostsWithMeta: Host[] = (await getSubDomainsList(host)).sort((a, b) => a.host.localeCompare(b.host));
+		const filteredHostsWithMeta: Host[] = (await getSubDomainsList(host, currentHost))
+			.sort((a, b) => a.host.localeCompare(b.host));
 
 		/* Build HTML page */
 		return buildHtmlPage(filteredHostsWithMeta);
@@ -54,9 +56,10 @@ function buildHtmlPage(hosts: Host[]): string {
 /**
  * Scans hosts and returns liste of available hosts
  * @param host The domain or host to scan
+ * @param currentHost The current host making the request
  * @returns A list of available hosts as strings
  */
-export async function getSubDomainsList(host: string): Promise<Host[]> {
+export async function getSubDomainsList(host: string, currentHost: string): Promise<Host[]> {
 	try {
 		const normalized = host.replace(/\.+$/g, '').toLowerCase();
 
@@ -71,7 +74,7 @@ export async function getSubDomainsList(host: string): Promise<Host[]> {
 		const filteredHosts: string[] = checkedHosts.filter(sub => !sub.startsWith('www.'));
 
 		/* Get metadata for filtered hosts */
-		const hostsWithMeta: Host[] = await hostRepository.getHostsWithMetaData(filteredHosts);
+		const hostsWithMeta: Host[] = await hostRepository.getHostsWithMetaData(filteredHosts, currentHost);
 
 		/* Keep only hosts with name or description (for exclude server) */
 		const filteredHostsWithMeta: Host[] = hostsWithMeta.filter(h => h.name || h.description);
