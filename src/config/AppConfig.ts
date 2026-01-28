@@ -17,6 +17,8 @@ interface AppConfigInterface {
     readonly app_env: string;
     readonly log_format: string;
     readonly domain_name: string;
+    readonly dir_cache_path: string;
+    readonly file_cache_path: string;
 
     /* Rate Limiting */
     readonly request_limit_per_second: number;
@@ -32,6 +34,8 @@ const AppConfig: AppConfigInterface = {
     app_env: process.env.APP_ENV?.toLowerCase() || 'prod',
     log_format: process.env.LOG_FORMAT || 'combined',
     domain_name: process.env.DOMAIN_NAME || (console.log("DOMAIN_NAME is not set"), process.exit(1)),
+    dir_cache_path: process.env.DIR_CACHE_PATH || "public/html/cache",
+    file_cache_path: process.env.FILE_CACHE_PATH || "hosts_projects_cache.html",
 
     /* Rate Limiting */
     request_limit_per_second: Math.round(Number(process.env.REQUEST_LIMIT_PER_SECOND)) || 10,

@@ -12,9 +12,25 @@ import AppConfig from '../../config/AppConfig';
  * @param res Response
  * @param next NextFunction
  */
-export const hostsHtml = async (req: Request, res: Response, next: NextFunction) => {
+export const getHostsProjectsHtmlPage = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const htmlPage: string = await hostService.getSubDomainsHtml(AppConfig.domain_name, req.hostname || req.headers.host || '');
+        const htmlPage: string = await hostService.getHostsProjectsHtmlPage(AppConfig.domain_name, req.hostname || req.headers.host || '');
+        res.status(200).send(htmlPage);
+    } catch (error) {
+        next(error);
+    }
+}
+
+
+/**
+ * Generate and returns a html page with all project on my domain name.
+ * @param req Request
+ * @param res Response
+ * @param next NextFunction
+ */
+export const saveHostsProjectsHtmlPage = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const htmlPage: string = await hostService.saveHostsProjectsHtmlPage(AppConfig.domain_name, req.hostname || req.headers.host || '');
         res.status(200).send(htmlPage);
     } catch (error) {
         next(error);
@@ -28,9 +44,9 @@ export const hostsHtml = async (req: Request, res: Response, next: NextFunction)
  * @param res Response
  * @param next NextFunction
  */
-export const hostsList = async (req: Request, res: Response, next: NextFunction) => {
+export const getHostsProjectsList = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const hosts: Host[] = await hostService.getSubDomainsList(AppConfig.domain_name, req.hostname || req.headers.host || '');
+        const hosts: Host[] = await hostService.getHostsProjectsList(AppConfig.domain_name, req.hostname || req.headers.host || '');
         res.status(200).json(hosts);
     } catch (error) {
         next(error);

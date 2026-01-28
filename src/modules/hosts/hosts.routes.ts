@@ -9,16 +9,23 @@ const router = Router();
 
 /**
  * GET /
- * Returns a list of subdomains for the configured domain name
+ * Returns an HTML page listing all projects on the configured domain name
  */
-router.get('/', HostController.hostsHtml);
+router.get('/', HostController.getHostsProjectsHtmlPage);
+
+
+/**
+ * GET /update
+ * Generates and returns an updated HTML page listing all projects on the configured domain name
+ */
+router.get('/update', HostController.saveHostsProjectsHtmlPage);
 
 
 /**
  * GET /hosts
- * Returns a list of all projects on the configured domain name
+ * Returns a list of all projects (Host, Name, Description, Icon) on the configured domain name
  */
-router.get('/hosts', HostController.hostsList);
+router.get('/hosts', HostController.getHostsProjectsList);
 
 
 
