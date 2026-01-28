@@ -3,6 +3,7 @@
 node_modules
 dist
 coverage
+public/html/cache
 
 !.github
 !.gitignore
