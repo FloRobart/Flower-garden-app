@@ -106,8 +106,18 @@ export async function getHostsProjectsList(host: string, currentHost: string): P
 		/* Keep only hosts with name or description (for exclude server) */
 		const filteredHostsWithMeta: Host[] = hostsWithMeta.filter(h => h.name || h.description);
 
+		/* Remove hosts with same name and description for exclude the same project with multiple subdomains */
+		const uniqueHostsMap: { [key: string]: Host } = {};
+		for (const host of filteredHostsWithMeta) {
+			const key = `${host.name || ''}-${host.description || ''}`;
+			if (!uniqueHostsMap[key]) {
+				uniqueHostsMap[key] = host;
+			}
+		}
+		const uniqueHosts: Host[] = Object.values(uniqueHostsMap);
+
 		/* Build HTML page */
-		return filteredHostsWithMeta.sort((a, b) => a.host.localeCompare(b.host));
+		return uniqueHosts.sort((a, b) => a.host.localeCompare(b.host));
 	} catch (error) {
 		if (error instanceof AppError) { throw error; }
 		throw new AppError('getHostsProjectsList failed', 500);

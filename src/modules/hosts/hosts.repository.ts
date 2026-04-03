@@ -116,9 +116,9 @@ export async function getHostsWithMetaData(hosts: string[], currentHost: string,
             try {
                 const meta = await getMetaData(host, timeout);
                 if (meta) {
-                    name = meta.name;
-                    description = meta.description;
-                    icon = meta.icon;
+                    name = meta.name?.trim() ?? undefined;
+                    description = meta.description?.trim() ?? undefined;
+                    icon = meta.icon?.trim() ?? undefined;
                 }
             } catch (e) {
                 // Ignore errors
