@@ -38,6 +38,7 @@ jobs:
         id: vars
         run: |
           version=$(node -p "require('./package.json').version")
+          version=${version%%+*}
           echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Set up Docker Buildx
